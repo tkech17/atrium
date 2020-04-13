@@ -5,6 +5,7 @@ import ch.tutteli.atrium.specs.fun1
 import ch.tutteli.atrium.specs.integration.AnyAssertionsSpec
 import ch.tutteli.atrium.specs.notImplemented
 import ch.tutteli.atrium.specs.testutils.WithAsciiReporter
+import ch.tutteli.atrium.specs.withFeatureSuffix
 import ch.tutteli.atrium.specs.withNullableSuffix
 import kotlin.reflect.KFunction2
 
@@ -28,7 +29,7 @@ class AnyAssertionsSpec : ch.tutteli.atrium.specs.integration.AnyAssertionsSpec(
 
     "${Expect<Int?>::toBe.name}(null)" to Companion::toBeNull,
     fun1(Expect<Int?>::toBeNullIfNullGivenElse),
-    "isA" to Companion::isAFeature,
+    ("isA" to Companion::isAFeature).withFeatureSuffix(),
     "isA" to Companion::isAStringToInt,
     "isA" to Companion::isAStringToInt,
     "isA" to Companion::isAString,

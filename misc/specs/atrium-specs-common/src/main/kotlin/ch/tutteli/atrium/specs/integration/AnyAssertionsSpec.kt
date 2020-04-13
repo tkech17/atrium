@@ -94,8 +94,8 @@ abstract class AnyAssertionsSpec(
     fun prefixedDescribe(description: String, body: Suite.() -> Unit) =
         prefixedDescribeTemplate(describePrefix, description, body)
 
-    fun describeFun(vararg funName: String, body: Suite.() -> Unit) =
-        describeFunTemplate(describePrefix, funName, body = body)
+    fun describeFun(vararg pairs: SpecPair<*>, body: Suite.() -> Unit) =
+        describeFunTemplate(describePrefix, pairs.map { it.name }.toTypedArray(), body = body)
 
     fun <T : Int?> Suite.checkInt(
         description: String,
@@ -281,7 +281,7 @@ abstract class AnyAssertionsSpec(
         }
     }
 
-    describeFun(toBeInt.name, notToBeInt.name, isSameInt.name, isNotSameInt.name) {
+    describeFun(toBeInt, notToBeInt, isSameInt, isNotSameInt) {
         checkInt("primitive", expect(1), toBeInt, notToBeInt, isSameInt, isNotSameInt)
         checkInt(
             "nullable primitive",
@@ -330,7 +330,7 @@ abstract class AnyAssertionsSpec(
         )
     }
 
-    describeFun(toBeNull.name) {
+    describeFun(toBeNull) {
 
         val toBeNullFun = toBeNull.lambda
         context("subject is null") {
@@ -362,7 +362,7 @@ abstract class AnyAssertionsSpec(
         }
     }
 
-    describeFun(toBeNullableInt.name) {
+    describeFun(toBeNullableInt) {
         val toBeNullableFun = toBeNullableInt.lambda
 
         context("subject is null") {
@@ -401,7 +401,7 @@ abstract class AnyAssertionsSpec(
         }
     }
 
-    describeFun(toBeNullIfNullGivenElse.name) {
+    describeFun(toBeNullIfNullGivenElse) {
         val toBeNullIfNullElseFun = toBeNullIfNullGivenElse.lambda
         context("subject is null") {
             val subject: Int? = null
@@ -441,7 +441,7 @@ abstract class AnyAssertionsSpec(
     }
 
 
-    describeFun(notToBeNull.name) {
+    describeFun(notToBeNull) {
 
         val notToBeNullFun = notToBeNull.lambda
 
@@ -553,12 +553,13 @@ abstract class AnyAssertionsSpec(
     }
 
 
-    describeFun("${isAFeature.name} feature") {
+    describeFun(isAFeature) {
         val isAFun = isAFeature.lambda
 
         context("subject is not in type hierarchy") {
             it("throws an AssertionError") {
                 expect {
+                    //TODO null is in type hierarchy of Int?
                     expect(null as Int?).isAFun().toBe(1)
                 }.toThrow<AssertionError> {
                     message {
@@ -595,7 +596,7 @@ abstract class AnyAssertionsSpec(
         }
     }
 
-    describeFun(isA.name) {
+    describeFun(isA) {
 
         context("subject is not in type hierarchy") {
             it("throws an AssertionError") {
@@ -620,6 +621,7 @@ abstract class AnyAssertionsSpec(
             context("it allows to perform an assertion specific for the subtype...") {
 
                 it("... which holds -- does not throw") {
+                    //TODO Number is not the same as Int
                     expect(1 as Number).isAIntLessThanFun(2)
                 }
 
@@ -637,6 +639,7 @@ abstract class AnyAssertionsSpec(
                     }
                 }
             }
+
         }
 
         context("subject is a subtype") {
@@ -677,35 +680,6 @@ abstract class AnyAssertionsSpec(
                         IS_A.getDefault(),
                         SubType::class.fullName,
                         DescriptionAnyAssertion.IS_SAME.getDefault()
-                    )
-                }
-            }
-        }
-
-        context("empty assertionCreator lambda") {
-            it("is the expected type, throws nonetheless") {
-                expect {
-                    expect("hello").(isACharSequenceFun.lambda) {}
-                }.toThrow<AssertionError> {
-                    message {
-                        contains(
-                            ErrorMessages.AT_LEAST_ONE_ASSERTION_DEFINED.getDefault() + ": false",
-                            ErrorMessages.FORGOT_DO_DEFINE_ASSERTION.getDefault(),
-                            ErrorMessages.HINT_AT_LEAST_ONE_ASSERTION_DEFINED.getDefault()
-                        )
-                        containsNot("${DescriptionAnyAssertion.IS_A.getDefault()}: CharSequence")
-                    }
-                }
-            }
-            it("is not the expected type, contains the error as well") {
-                expect {
-                    expect("hello").(isAIntFun.lambda) {}
-                }.toThrow<AssertionError> {
-                    messageContains(
-                        ErrorMessages.AT_LEAST_ONE_ASSERTION_DEFINED.getDefault() + ": false",
-                        ErrorMessages.FORGOT_DO_DEFINE_ASSERTION.getDefault(),
-                        ErrorMessages.HINT_AT_LEAST_ONE_ASSERTION_DEFINED.getDefault(),
-                        "${DescriptionAnyAssertion.IS_A.getDefault()}: Int"
                     )
                 }
             }
